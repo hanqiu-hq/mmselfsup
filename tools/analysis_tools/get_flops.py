@@ -1,6 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 
+import torch
+from fvcore.nn import FlopCountAnalysis
+from fvcore.nn import flop_count_table
+
 from mmcv import Config
 from mmcv.cnn.utils import get_model_complexity_info
 
@@ -25,9 +29,9 @@ def main():
     args = parse_args()
 
     if len(args.shape) == 1:
-        input_shape = (3, args.shape[0], args.shape[0])
+        input_shape = (1, 3, args.shape[0], args.shape[0])
     elif len(args.shape) == 2:
-        input_shape = (3, ) + tuple(args.shape)
+        input_shape = (1, 3, ) + tuple(args.shape)
     else:
         raise ValueError('invalid input shape')
 
@@ -35,20 +39,8 @@ def main():
     model = build_algorithm(cfg.model)
     model.eval()
 
-    if hasattr(model, 'forward_dummy'):
-        model.forward = model.forward_dummy
-    else:
-        raise NotImplementedError(
-            'FLOPs counter is currently not currently supported with {}'.
-            format(model.__class__.__name__))
-
-    flops, params = get_model_complexity_info(model, input_shape)
-    split_line = '=' * 30
-    print(f'{split_line}\nInput shape: {input_shape}\n'
-          f'Flops: {flops}\nParams: {params}\n{split_line}')
-    print('!!!Please be cautious if you use the results in papers. '
-          'You may need to check if all ops are supported and verify that the '
-          'flops computation is correct.')
+    flops = FlopCountAnalysis(model, (input_shape))
+    print(flop_count_table(flops))
 
 
 if __name__ == '__main__':
