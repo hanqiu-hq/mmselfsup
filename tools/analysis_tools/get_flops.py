@@ -39,7 +39,7 @@ def main():
     model = build_algorithm(cfg.model)
     model.eval()
 
-    flops = FlopCountAnalysis(model, (input_shape))
+    flops = FlopCountAnalysis(model, (torch.rand(input_shape),))
     print(flop_count_table(flops))
 
 
