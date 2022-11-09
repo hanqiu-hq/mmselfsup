@@ -28,6 +28,9 @@ lr_config = dict(
     warmup_ratio=1e-06,
     warmup_by_epoch=True)
 
+# mixed precision
+fp16 = dict(loss_scale='dynamic')
+
 # schedule
 runner = dict(max_epochs=300)
 
